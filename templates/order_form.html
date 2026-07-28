@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Order' if order else 'New Order' }}{% endblock %}
+{% block content %}
+
+<h4 class="mb-3">{{ 'Edit Order ' + order.order_number if order else 'New Order' }}</h4>
+
+<form method="POST" enctype="multipart/form-data">
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Customer</h6>
+    {% if not order %}
+    <div class="mb-3">
+      <label class="form-label">Select Existing Customer</label>
+      <select name="customer_id" class="form-select form-select-lg" id="customerSelect">
+        <option value="">-- Create a new customer below --</option>
+        {% for c in customers %}
+          <option value="{{ c.id }}">{{ c.name }} ({{ c.mobile }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div id="newCustomerFields" class="row g-2">
+      <div class="col-md-4"><input type="text" name="new_customer_name" class="form-control" placeholder="New customer name"></div>
+      <div class="col-md-4"><input type="tel" name="new_customer_mobile" class="form-control" placeholder="Mobile number"></div>
+      <div class="col-md-4"><input type="text" name="new_customer_address" class="form-control" placeholder="Address (optional)"></div>
+    </div>
+    {% else %}
+    <div class="mb-3">
+      <label class="form-label">Customer</label>
+      <select name="customer_id" class="form-select form-select-lg">
+        {% for c in customers %}
+          <option value="{{ c.id }}" {{ 'selected' if c.id == order.customer_id }}>{{ c.name }} ({{ c.mobile }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Order Details</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Order Date</label>
+        <input type="date" name="order_date" class="form-control" value="{{ order.order_date.isoformat() if order else today.isoformat() }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Dress Type</label>
+        <select name="dress_type" class="form-select" id="dressTypeSelect">
+          {% for d in DRESS_CATEGORIES %}
+            <option value="{{ d }}" {{ 'selected' if order and order.dress_type == d }}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4" id="customDressWrapper">
+        <label class="form-label">Custom Dress Name</label>
+        <input type="text" name="custom_dress_type" class="form-control" value="{{ order.custom_dress_type if order else '' }}" placeholder="Only if 'Custom Dress' selected">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Quantity</label>
+        <input type="number" name="quantity" min="1" class="form-control" value="{{ order.quantity if order else 1 }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Trial Date</label>
+        <input type="date" name="trial_date" class="form-control" value="{{ order.trial_date.isoformat() if order and order.trial_date else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Delivery Date <span class="text-muted small">(leave blank for auto-schedule)</span></label>
+        <input type="date" name="delivery_date" class="form-control" value="{{ order.delivery_date.isoformat() if order else '' }}">
+        <div class="form-text">Auto-schedule starts {{ default_delivery_days }} days from order date, max {{ settings.max_deliveries_per_day }}/day.</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Fabric Details</label>
+        <textarea name="fabric_details" class="form-control" rows="2">{{ order.fabric_details if order else '' }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Design Notes</label>
+        <textarea name="design_notes" class="form-control" rows="2">{{ order.design_notes if order else '' }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Special Instructions</label>
+        <textarea name="special_instructions" class="form-control" rows="2">{{ order.special_instructions if order else '' }}</textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Design Image</label>
+        <input type="file" name="design_image" class="form-control" accept="image/*">
+        {% if order and order.design_image %}<div class="form-text">Current file uploaded.</div>{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Fabric Image</label>
+        <input type="file" name="fabric_image" class="form-control" accept="image/*">
+        {% if order and order.fabric_image %}<div class="form-text">Current file uploaded.</div>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Measurements</h6>
+    {% set m = order.measurements if order else None %}
+    <div class="row g-3">
+      <div class="col-6 col-md-3"><label class="form-label">Chest</label><input type="number" step="0.1" name="chest" class="form-control" value="{{ m.chest if m and m.chest else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Waist</label><input type="number" step="0.1" name="waist" class="form-control" value="{{ m.waist if m and m.waist else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Hip</label><input type="number" step="0.1" name="hip" class="form-control" value="{{ m.hip if m and m.hip else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Shoulder</label><input type="number" step="0.1" name="shoulder" class="form-control" value="{{ m.shoulder if m and m.shoulder else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Sleeve Length</label><input type="number" step="0.1" name="sleeve_length" class="form-control" value="{{ m.sleeve_length if m and m.sleeve_length else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Length</label><input type="number" step="0.1" name="length" class="form-control" value="{{ m.length if m and m.length else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Neck</label><input type="number" step="0.1" name="neck" class="form-control" value="{{ m.neck if m and m.neck else '' }}"></div>
+      <div class="col-6 col-md-3"><label class="form-label">Arm Hole</label><input type="number" step="0.1" name="arm_hole" class="form-control" value="{{ m.arm_hole if m and m.arm_hole else '' }}"></div>
+      <div class="col-12"><label class="form-label">Measurement Notes</label><textarea name="measurement_notes" class="form-control" rows="2">{{ m.extra_notes if m and m.extra_notes else '' }}</textarea></div>
+    </div>
+  </div>
+
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Billing</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Total Amount (₹)</label>
+        <input type="number" step="0.01" name="total_amount" class="form-control" value="{{ order.total_amount if order else '' }}">
+      </div>
+      {% if not order %}
+      <div class="col-md-6">
+        <label class="form-label">Advance Paid (₹)</label>
+        <input type="number" step="0.01" name="advance_paid" class="form-control" value="0">
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mb-4">
+    <button type="submit" class="btn btn-theme touch-btn flex-fill">{{ 'Save Changes' if order else 'Create Order' }}</button>
+    <a href="{{ url_for('main.orders_list') }}" class="btn btn-outline-secondary touch-btn">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleCustomDress() {
+  const select = document.getElementById('dressTypeSelect');
+  const wrapper = document.getElementById('customDressWrapper');
+  if (!select || !wrapper) return;
+  wrapper.style.display = (select.value === 'Custom Dress') ? '' : 'none';
+}
+document.addEventListener('DOMContentLoaded', function () {
+  toggleCustomDress();
+  const select = document.getElementById('dressTypeSelect');
+  if (select) select.addEventListener('change', toggleCustomDress);
+
+  const customerSelect = document.getElementById('customerSelect');
+  const newCustomerFields = document.getElementById('newCustomerFields');
+  function toggleNewCustomer() {
+    if (!customerSelect || !newCustomerFields) return;
+    newCustomerFields.style.display = customerSelect.value ? 'none' : '';
+  }
+  if (customerSelect) {
+    toggleNewCustomer();
+    customerSelect.addEventListener('change', toggleNewCustomer);
+  }
+});
+</script>
+{% endblock %}
