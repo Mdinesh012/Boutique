@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+
+<h4 class="mb-3">Settings</h4>
+
+<form method="POST" enctype="multipart/form-data">
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Shop Details</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Shop Name</label>
+        <input type="text" name="shop_name" class="form-control" value="{{ settings.shop_name }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Mobile Number</label>
+        <input type="text" name="mobile_number" class="form-control" value="{{ settings.mobile_number }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">WhatsApp Number</label>
+        <input type="text" name="whatsapp_number" class="form-control" value="{{ settings.whatsapp_number }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">GST Number (Optional)</label>
+        <input type="text" name="gst_number" class="form-control" value="{{ settings.gst_number }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Address</label>
+        <textarea name="address" class="form-control" rows="2">{{ settings.address }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Business Logo</label>
+        <input type="file" name="logo" class="form-control" accept="image/*">
+        {% if settings.logo_path %}
+          <div class="mt-2"><img src="{{ url_for('static', filename='uploads/' + settings.logo_path) }}" style="width:60px;height:60px;border-radius:10px;object-fit:cover;"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Scheduling</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Default Delivery Days</label>
+        <input type="number" name="default_delivery_days" min="1" class="form-control" value="{{ settings.default_delivery_days }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Maximum Deliveries Per Day</label>
+        <input type="number" name="max_deliveries_per_day" min="1" class="form-control" value="{{ settings.max_deliveries_per_day }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="card-soft p-3 p-lg-4 mb-3">
+    <h6 class="text-theme mb-3">Admin Login</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" value="{{ session.get('admin_username') }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">New Password <span class="text-muted small">(leave blank to keep current)</span></label>
+        <input type="password" name="password" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-theme touch-btn">Save Settings</button>
+</form>
+
+{% endblock %}
