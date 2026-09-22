@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ settings.shop_name }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-0">Dashboard</h4>
+    <small class="text-muted">{{ today.strftime('%A, %d %B %Y') }}</small>
+  </div>
+  <a href="{{ url_for('main.order_add') }}" class="btn btn-theme touch-btn d-none d-lg-inline-flex align-items-center gap-2">
+    <i class="bi bi-plus-lg"></i> New Order
+  </a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#6b4226;"><i class="bi bi-bag-check"></i></div>
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">{{ total_orders }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#3730a3;"><i class="bi bi-plus-circle"></i></div>
+      <div class="stat-label">New Orders</div>
+      <div class="stat-value">{{ new_orders }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#c99b52;"><i class="bi bi-scissors"></i></div>
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value">{{ in_progress }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#059669;"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-label">Ready for Delivery</div>
+      <div class="stat-value">{{ ready }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#166534;"><i class="bi bi-truck"></i></div>
+      <div class="stat-label">Delivered</div>
+      <div class="stat-value">{{ delivered }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#991b1b;"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-label">Overdue</div>
+      <div class="stat-value">{{ overdue }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#0369a1;"><i class="bi bi-cash-coin"></i></div>
+      <div class="stat-label">Today's Income</div>
+      <div class="stat-value">₹{{ "%.0f"|format(todays_income) }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#0e7490;"><i class="bi bi-calendar-check"></i></div>
+      <div class="stat-label">Monthly Income</div>
+      <div class="stat-value">₹{{ "%.0f"|format(monthly_income) }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#b45309;"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-label">Pending Payments</div>
+      <div class="stat-value">₹{{ "%.0f"|format(pending_payments) }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card-soft p-3">
+      <h6 class="mb-3"><i class="bi bi-bell text-theme"></i> Today's Reminders</h6>
+      {% if todays_reminders %}
+        {% for r in todays_reminders %}
+          <div class="d-flex justify-content-between align-items-start border-bottom py-2">
+            <div>
+              <div class="small">{{ r.message }}</div>
+              <a href="{{ url_for('main.order_detail', order_id=r.order_id) }}" class="small text-theme">View order &rarr;</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">No reminders right now.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-soft p-3">
+      <h6 class="mb-3"><i class="bi bi-calendar-event text-theme"></i> Upcoming Deliveries</h6>
+      {% if upcoming_deliveries %}
+        {% for o in upcoming_deliveries %}
+          <a href="{{ url_for('main.order_detail', order_id=o.id) }}" class="d-flex justify-content-between align-items-center border-bottom py-2 text-decoration-none text-dark">
+            <div>
+              <div class="small fw-semibold">{{ o.customer.name }}</div>
+              <div class="small text-muted">{{ o.display_dress_type }} · {{ o.order_number }}</div>
+            </div>
+            <span class="small text-theme">{{ o.delivery_date.strftime('%d %b') }}</span>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">Nothing scheduled.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-soft p-3">
+      <h6 class="mb-3"><i class="bi bi-clock-history text-theme"></i> Recent Orders</h6>
+      {% if recent_orders %}
+        {% for o in recent_orders %}
+          <a href="{{ url_for('main.order_detail', order_id=o.id) }}" class="d-flex justify-content-between align-items-center border-bottom py-2 text-decoration-none text-dark">
+            <div>
+              <div class="small fw-semibold">{{ o.customer.name }}</div>
+              <div class="small text-muted">{{ o.order_number }}</div>
+            </div>
+            <span class="badge-status status-{{ o.status.replace(' ', '-') }}">{{ o.status }}</span>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted small mb-0">No orders yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
